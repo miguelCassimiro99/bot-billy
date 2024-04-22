@@ -1,13 +1,19 @@
 import os
 from dotenv import load_dotenv
 import discord
+import base64
 from discord.ext import commands
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import json
 
 load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-GOOGLE_CREDENTIALS_JSON = os.getenv('GOOGLE_CREDENTIALS_JSON');
+
+encoded_cred = os.getenv('GOOGLE_CREDENTIALS_BASE')
+decoded_cred = base64.b64decode(encoded_cred)
+credentials_json = json.loads(decoded_cred)
+# GOOGLE_CREDENTIALS_JSON = os.getenv('GOOGLE_CREDENTIALS_JSON');
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -59,7 +65,7 @@ async def update_spreadsheet(ctx):
 
         scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',
                  "https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDENTIALS_JSON, scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_json, scope)
         client_gs = gspread.authorize(creds)
         sheet = client_gs.open('financial_inflows_auto').sheet1
 
